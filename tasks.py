@@ -1,5 +1,7 @@
 from variables import msgs as M
 
+taskStr = 'task'
+
 
 def getActInfo(actNum, tasks):
     """ Obtener la información de todas las actividades
@@ -32,10 +34,10 @@ def addTask(id, act, pred, dur, tasks):
     if pred != '':
         actInfo['pred'] = pred.split(',')
     else:
-        actInfo['pred'] = '-1'
+        actInfo['pred'] = ['-1']
     actInfo['dur'] = dur
     addDefault(actInfo)
-    tasks['task' + str(id)] = actInfo
+    tasks[taskStr + str(id)] = actInfo
 
 
 def addDefault(actInfo):
@@ -49,3 +51,87 @@ def addDefault(actInfo):
     actInfo['LF'] = 0
     actInfo['float'] = 0
     actInfo['isCritical'] = False
+
+
+def forwardPass(tasks):
+    """ Algoritmo para el forward pass
+    Args:
+        tasks: diccionario para guardar las actividades
+    """
+    for task in tasks:
+        if('-1' in tasks[task]['pred']):
+            tasks[task]['ES'] = 1
+            tasks[task]['EF'] = (tasks[task]['dur'])
+        else:
+            for k in tasks.keys():
+                current = tasks[k]
+                for pred in current['pred']:
+                    if(pred != '-1' and len(current['pred']) == 1):
+                        current['ES'] = int(tasks[taskStr + pred]['EF']) + 1
+                        current['EF'] = int(current['ES']) + \
+                            int(current['dur']) - 1
+                    elif(pred != '-1'):
+                        if(int(tasks[taskStr + pred]['EF']) > int(current['ES'])):
+                            current['ES'] = int(
+                                tasks[taskStr + pred]['EF'] + 1)
+                            current['EF'] = int(
+                                current['ES']) + int(current['dur']) - 1
+
+
+def backwardPass(reversedTasks, tasks):
+    """ Algoritmo para el backwards pass
+    Args:
+        reversedTasks: lista con los keys de los tasks invertidos
+        tasks: diccionario para guardar las actividades
+    """
+    for task in reversedTasks:
+        current = tasks[task]
+        if(reversedTasks.index(task) == 0):
+            current['LF'] = current['EF']
+            current['LS'] = current['ES']
+
+        for pred in current['pred']:
+            if(pred != '-1'):
+                currPred = tasks[taskStr + str(pred)]
+                if(currPred['LF'] == 0):
+                    currPred['LF'] = int(current['LS']) - 1
+                    currPred['LS'] = int(currPred['LF']) - \
+                        int(currPred['dur']) + 1
+
+                    currPred['float'] = int(
+                        currPred['LF']) - int(currPred['EF'])
+
+                if(int(currPred['LF']) > int(current['LS'])):
+                    currPred['LF'] = int(current['LS']) - 1
+                    currPred['LS'] = int(currPred['LF']) - \
+                        int(currPred['dur']) + 1
+                    currPred['float'] = int(
+                        currPred['LF']) - int(currPred['EF'])
+
+
+def findCriticalPath(tasks):
+    """ Algoritmo de la ruta crítica
+    Args:
+        tasks: diccionario para guardar las actividades
+    """
+    forwardPass(tasks)
+    reversedTasks = list()
+    for key in tasks.keys():
+        reversedTasks.append(key)
+    reversedTasks.reverse()
+    backwardPass(reversedTasks, tasks)
+    printData(tasks)
+
+
+def printData(tasks):
+    """ Imprimir matriz con resultados
+    Args:
+        tasks: diccionario para guardar las actividades
+    """
+    print('id\tname\tdur\tES\tEF\tLS\tLF\tfloat\tisCritical')
+    for task in tasks:
+        curr = tasks[task]
+        if(curr['float'] == 0):
+            curr['isCritical'] = True
+        print(str(curr['id']) + '\t' + str(curr['name']) + '\t' + str(curr['dur']) + '\t' + str(curr['ES']) + '\t' + str(curr['EF']) + '\t' +
+              str(curr['LS']) + '\t' + str(curr['LF']) + '\t' + str(curr['float']) + '\t' + str(curr['isCritical']))
