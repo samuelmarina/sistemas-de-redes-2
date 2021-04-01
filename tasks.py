@@ -60,22 +60,22 @@ def forwardPass(tasks):
     """
     for task in tasks:
         if('-1' in tasks[task]['pred']):
-            tasks[task]['ES'] = 1
+            tasks[task]['ES'] = 0
             tasks[task]['EF'] = (tasks[task]['dur'])
         else:
             for k in tasks.keys():
                 current = tasks[k]
                 for pred in current['pred']:
                     if(pred != '-1' and len(current['pred']) == 1):
-                        current['ES'] = int(tasks[taskStr + pred]['EF']) + 1
+                        current['ES'] = int(tasks[taskStr + pred]['EF'])
                         current['EF'] = int(current['ES']) + \
-                            int(current['dur']) - 1
+                            int(current['dur'])
                     elif(pred != '-1'):
                         if(int(tasks[taskStr + pred]['EF']) > int(current['ES'])):
                             current['ES'] = int(
-                                tasks[taskStr + pred]['EF'] + 1)
+                                tasks[taskStr + pred]['EF'])
                             current['EF'] = int(
-                                current['ES']) + int(current['dur']) - 1
+                                current['ES']) + int(current['dur'])
 
 
 def backwardPass(reversedTasks, tasks):
@@ -94,17 +94,17 @@ def backwardPass(reversedTasks, tasks):
             if(pred != '-1'):
                 currPred = tasks[taskStr + str(pred)]
                 if(currPred['LF'] == 0):
-                    currPred['LF'] = int(current['LS']) - 1
+                    currPred['LF'] = int(current['LS'])
                     currPred['LS'] = int(currPred['LF']) - \
-                        int(currPred['dur']) + 1
+                        int(currPred['dur'])
 
                     currPred['float'] = int(
                         currPred['LF']) - int(currPred['EF'])
 
-                if(int(currPred['LF']) > int(current['LS'])):
-                    currPred['LF'] = int(current['LS']) - 1
+                elif(int(currPred['LF']) > int(current['LS'])):
+                    currPred['LF'] = int(current['LS'])
                     currPred['LS'] = int(currPred['LF']) - \
-                        int(currPred['dur']) + 1
+                        int(currPred['dur'])
                     currPred['float'] = int(
                         currPred['LF']) - int(currPred['EF'])
 
