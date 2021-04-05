@@ -1,4 +1,5 @@
 from variables import msgs as M
+from helpers import checkWrongAnswer
 
 taskStr = 'task'
 
@@ -15,6 +16,7 @@ def getActInfo(actNum, tasks):
         act = str(input(M['msg3']))
         pred = str(input(M['msg4']))
         dur = str(input(M['msg5']))
+        dur = checkWrongAnswer(dur)
         print('\n')
         addTask(num, act, pred, dur, tasks)
 
@@ -128,10 +130,19 @@ def printData(tasks):
     Args:
         tasks: diccionario para guardar las actividades
     """
-    print('id\tname\tdur\tES\tEF\tLS\tLF\tfloat\tisCritical')
+
+
+def printData(tasks):
+    """ Imprimir matriz con resultados
+    Args:
+        tasks: diccionario para guardar las actividades
+    """
+    print('ID\tNombre\tDur\tES\tEF\tLS\tLF\tHolgura\tEs Crítica\tPredecesores')
     for task in tasks:
         curr = tasks[task]
         if(curr['float'] == 0):
             curr['isCritical'] = True
+        if(curr['pred'] == ['-1']):
+            curr['pred'] = ''
         print(str(curr['id']) + '\t' + str(curr['name']) + '\t' + str(curr['dur']) + '\t' + str(curr['ES']) + '\t' + str(curr['EF']) + '\t' +
-              str(curr['LS']) + '\t' + str(curr['LF']) + '\t' + str(curr['float']) + '\t' + str(curr['isCritical']))
+              str(curr['LS']) + '\t' + str(curr['LF']) + '\t' + str(curr['float']) + '\t' + str(curr['isCritical']) + '\t' + '\t' + str(curr['pred']))
